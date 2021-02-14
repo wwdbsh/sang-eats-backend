@@ -8,6 +8,7 @@ import { CommonModule } from './common/common.module';
 import { User } from './users/entities/user.entity';
 import { JwtModule } from './jwt/jwt.module';
 import { JwtMiddleware } from './jwt/jwt.middleware';
+import { AuthModule } from './auth/auth.module';
 
 console.log(Joi);
 
@@ -46,7 +47,6 @@ console.log(Joi);
       privateKey:process.env.PRIVATE_KEY
     }),
     UsersModule,
-    CommonModule,
   ],
   controllers: [],
   providers: [],
