@@ -13,12 +13,14 @@ export class MailService {
         // this.sendEmail("hi", "bye");
     }
 
-    private async sendEmail(subject:string, content:string, to?:string){
+    private async sendEmail(subject:string, template:string){
         const form = new FormData();
         form.append("from", `Excited User <mailgun@${this.options.domain}>`);
         form.append("to", `${this.options.fromEmail}`);
         form.append("subject", subject);
-        form.append("text", content);
+        form.append("template", template);
+        form.append("v:code", "asdfasdf");
+        form.append("v:username", "sangheon");
         const response = await got(`https://api.mailgun.net/v3/${this.options.domain}/messages`, {
             headers:{
                 "Authorization":`Basic ${Buffer.from(`api:${this.options.apiKey}`).toString("base64")}`
