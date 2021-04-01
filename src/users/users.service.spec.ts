@@ -63,12 +63,14 @@ describe("UserService", () => {
         expect(service).toBeDefined();
     });
 
+    // createAccount
     describe("createAccount", () => {
         const createAccountArgs = {
             email:"",
             password:"",
             role:0,
         };
+
         it("should fail if user exists", async () => {
             usersRepository.findOne.mockResolvedValue({
                 id:1,
@@ -80,6 +82,7 @@ describe("UserService", () => {
                 error:"There is a user with that email already"
             });
         });
+
         it("should create a new user", async () => {
             usersRepository.findOne.mockResolvedValue(undefined);
             usersRepository.create.mockReturnValue(createAccountArgs);
@@ -117,6 +120,15 @@ describe("UserService", () => {
             );
 
             expect(result).toEqual({ok:true});
+        });
+
+        it("should fail on exception", async () => {
+            usersRepository.findOne.mockRejectedValue(new Error());
+            const result = await service.createAccount(createAccountArgs);
+            expect(result).toEqual({
+                ok:false,
+                error:"Couldn't create account"
+            });
         });
     });
     it.todo("login");
