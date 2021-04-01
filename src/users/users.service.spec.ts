@@ -1,6 +1,5 @@
 import { Test } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import create from "got/dist/source/create";
 import { JwtService } from "src/jwt/jwt.service";
 import { MailService } from "src/mail/mail.service";
 import { Repository } from "typeorm";
@@ -29,7 +28,7 @@ type MockRepository<T=any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 describe("UserService", () => {
     let service: UserService;
     let usersRepository:MockRepository<User>;
-    let verificationRepository:MockRepository<Verification>;
+    let verificationsRepository:MockRepository<Verification>;
     let mailService:MailService;
     let jwtService:JwtService;
 
@@ -59,7 +58,7 @@ describe("UserService", () => {
         mailService = module.get<MailService>(MailService);
         jwtService = module.get<JwtService>(JwtService);
         usersRepository = module.get(getRepositoryToken(User));
-        verificationRepository = module.get(getRepositoryToken(Verification));
+        verificationsRepository = module.get(getRepositoryToken(Verification));
     });
 
     it("should be defined", () => {
@@ -91,10 +90,10 @@ describe("UserService", () => {
             usersRepository.create.mockReturnValue(createAccountArgs);
             usersRepository.save.mockResolvedValue(createAccountArgs);
             
-            verificationRepository.create.mockReturnValue({
+            verificationsRepository.create.mockReturnValue({
                 user:createAccountArgs
             });
-            verificationRepository.save.mockResolvedValue({
+            verificationsRepository.save.mockResolvedValue({
                 code:"code",
             });
             
@@ -106,13 +105,13 @@ describe("UserService", () => {
             expect(usersRepository.save).toHaveBeenCalledTimes(1);
             expect(usersRepository.save).toHaveBeenCalledWith(createAccountArgs);
             
-            expect(verificationRepository.create).toHaveBeenCalledTimes(1);
-            expect(verificationRepository.create).toHaveBeenCalledWith({
+            expect(verificationsRepository.create).toHaveBeenCalledTimes(1);
+            expect(verificationsRepository.create).toHaveBeenCalledWith({
                 user:createAccountArgs
             });
             
-            expect(verificationRepository.save).toHaveBeenCalledTimes(1);
-            expect(verificationRepository.save).toHaveBeenCalledWith({
+            expect(verificationsRepository.save).toHaveBeenCalledTimes(1);
+            expect(verificationsRepository.save).toHaveBeenCalledWith({
                 user:createAccountArgs
             });
             
@@ -225,8 +224,46 @@ describe("UserService", () => {
     
     // editProfile
     describe("editProfile", () => {
+        it("should change email", async () => {
+            const oldUser = {
+                email: "mock@old.com",
+                verified: true,
+            };
+            const editProfileArgs = {
+                userId: 1,
+                input: { email: "mock@new.com" },
+            };
+            const newVerification = {
+                code: "code",
+            };
+            const newUser = {
+                verified: false,
+                email: editProfileArgs.input.email,
+            };
+            
+            usersRepository.findOne.mockResolvedValue(oldUser);
+            verificationsRepository.create.mockReturnValue(newVerification);
+            verificationsRepository.save.mockResolvedValue(newVerification);
 
+            await service.editProfile(editProfileArgs.userId, editProfileArgs.input);
+            
+            expect(usersRepository.findOne).toHaveBeenCalledTimes(1);
+            expect(usersRepository.findOne).toHaveBeenCalledWith(editProfileArgs.userId);
+            
+            expect(verificationsRepository.create).toHaveBeenCalledWith({
+                user: newUser
+            });
+            
+              expect(verificationsRepository.save).toHaveBeenCalledWith(
+                newVerification
+            );
+
+            expect(mailService.sendVerificationEmail).toHaveBeenCalledWith(
+                newUser.email,
+                newVerification.code
+            );
+        });
     });
-    
+
     it.todo("verifyEmail");
 });
