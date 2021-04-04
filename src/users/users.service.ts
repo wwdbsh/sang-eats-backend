@@ -164,7 +164,7 @@ export class UserService {
     } catch (error) {
       return {
         ok: false,
-        error: "Could not verify email.",
+        error: "Could not verify email",
       };
     }
   }
