@@ -11,7 +11,7 @@ export class MailService {
         private readonly options:MailModuleOptions,
     ){}
 
-    private async sendEmail(
+    async sendEmail(
         to:string,
         subject:string,
         template:string,
