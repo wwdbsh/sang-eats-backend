@@ -379,7 +379,7 @@ describe('UserModule (e2e)', () => {
         } = res;
         expect(ok).toBe(false);
         expect(error).toBe("Verification not found");
-      })
+      });
     });
   });
 });
