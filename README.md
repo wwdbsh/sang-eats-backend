@@ -1,8 +1,8 @@
-# Sang Eats
+## Sang Eats
 
 The Backend of Uber Eats Clone
 
-## User Entity
+### User Entity
 
 - id
 - createdAt
@@ -12,7 +12,7 @@ The Backend of Uber Eats Clone
 - password
 - role(client|owner|delivery)
 
-## User CRUD
+### User CRUD
 
 - Create Account
 - Log In
@@ -20,9 +20,21 @@ The Backend of Uber Eats Clone
 - Edit Profile
 - Verify Email
 
-## Restaurant Model
+### Restaurant Entity
 
 - name
 - category
 - address
 - coverImage
+
+### Restaurant
+
+- See Categories
+- See Restaurants by Category (pagination)
+- See Restaurants (pagination)
+- See Restaurant
+- Edit Restaurant
+- Delete Restaurant
+- Create Dish
+- Edit Dish
+- Delete Dish
