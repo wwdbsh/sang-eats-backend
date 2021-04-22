@@ -35,6 +35,7 @@ The Backend of Uber Eats Clone
 - See Restaurant
 - Edit Restaurant
 - Delete Restaurant
-- Create Dish
-- Edit Dish
-- Delete Dish
+
+* Create Dish
+* Edit Dish
+* Delete Dish
