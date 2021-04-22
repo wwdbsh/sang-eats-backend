@@ -1,8 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { CoreOutput } from "src/common/dtos/output.dto";
 import { User } from "src/users/entities/user.entity";
 import { Repository } from "typeorm";
 import { CreateRestaurantInput, CreateRestaurantOutput } from "./dtos/create-restaurant.dto";
+import { DeleteRestaurantInput, DeleteRestaurantOutput } from "./dtos/delete-restaurant.dto";
 import { EditRestaurantInput, EditRestaurantOutput } from "./dtos/edit-restaurant.dto";
 import { Category } from "./entities/category.entity";
 import { Restaurant } from "./entities/restaurant.entity";
@@ -43,11 +45,33 @@ export class RestaurantService{
         owner:User,
         editRestaurantInput:EditRestaurantInput
     ):Promise<EditRestaurantOutput>{
-        const restaurant = await this.restaurants.findOne(
-            editRestaurantInput.restaurantId,
-            {loadRelationIds:true}
+        return await this.performRequest(
+            owner,
+            [editRestaurantInput.restaurantId,{loadRelationIds:true}],
+            "edit",
+            editRestaurantInput,
         );
+    }
+
+    async deleteRestaurant(
+        owner:User,
+        {restaurantId}:DeleteRestaurantInput
+    ):Promise<DeleteRestaurantOutput>{
+        return await this.performRequest(
+            owner,
+            [restaurantId],
+            "delete"
+        );
+    }
+
+    async performRequest(
+        owner:User,
+        options:Object[],
+        op:string,
+        editRestaurantInput?:EditRestaurantInput
+    ):Promise<CoreOutput>{
         try{
+            const restaurant = await this.restaurants.findOne(...options);
             if(!restaurant){
                 return {
                     ok:false,
@@ -57,25 +81,33 @@ export class RestaurantService{
             if(owner.id !== restaurant.ownerId){
                 return {
                     ok:false,
-                    error:"You can't edit a restaurant that you don't own"
+                    error:`You can't ${op} a restaurant that you don't own`
                 };
             }
-            let category:Category = null;
-            if(editRestaurantInput.categoryName){
-                category = await this.categories.getOrCreate(editRestaurantInput.categoryName);
+            switch(op){
+                case "edit":
+                    let category:Category = null;
+                    if(editRestaurantInput.categoryName){
+                        category = await this.categories.getOrCreate(editRestaurantInput.categoryName);
+                    }
+                    await this.restaurants.save([{
+                        id:editRestaurantInput.restaurantId,
+                        ...editRestaurantInput,
+                        ...(category && {category})
+                    }]);
+                    return {
+                        ok:true
+                    };
+                case "delete":
+                    await this.restaurants.delete(options[0]);
+                    return {
+                        ok:true
+                    };
             }
-            await this.restaurants.save([{
-                id:editRestaurantInput.restaurantId,
-                ...editRestaurantInput,
-                ...(category && {category})
-            }]);
-            return {
-                ok:true
-            };
         }catch{
             return {
                 ok:false,
-                error:"Could not edit Restaurant"
+                error:`Could not ${op} restaurant.`
             };
         }
     }
